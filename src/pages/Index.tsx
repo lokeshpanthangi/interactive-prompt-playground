@@ -219,72 +219,76 @@ const Index = () => {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       
-      <div className="flex-1 max-w-4xl mx-auto px-4 py-8">
-        <Header />
-        
-        {showComparison && comparisonMessages.length > 0 ? (
-          <ComparisonView 
-            messages={comparisonMessages}
-            onRemoveFromComparison={removeFromComparison}
-            onClose={() => setShowComparison(false)}
-          />
-        ) : (
-          <div className="space-y-8 mt-8">
-            <ModelSelection 
-              selectedModel={selectedModel}
-              onModelSelect={setSelectedModel}
+      <div className={`flex-1 overflow-y-auto transition-all duration-300 ease-in-out ${
+        sidebarCollapsed ? 'ml-12' : 'ml-80'
+      }`}>
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Header />
+          
+          {showComparison && comparisonMessages.length > 0 ? (
+            <ComparisonView 
+              messages={comparisonMessages}
+              onRemoveFromComparison={removeFromComparison}
+              onClose={() => setShowComparison(false)}
             />
-            
-            <PromptConfiguration
-              systemPrompt={systemPrompt}
-              userPrompt={userPrompt}
-              onSystemPromptChange={setSystemPrompt}
-              onUserPromptChange={setUserPrompt}
-            />
-            
-            <ParameterControls
-              temperature={temperature}
-              maxTokens={maxTokens}
-              presencePenalty={presencePenalty}
-              frequencyPenalty={frequencyPenalty}
-              onTemperatureChange={setTemperature}
-              onMaxTokensChange={setMaxTokens}
-              onPresencePenaltyChange={setPresencePenalty}
-              onFrequencyPenaltyChange={setFrequencyPenalty}
-            />
-            
-            <ActionButtons
-              onGenerate={handleGenerate}
-              onBatchTest={handleBatchTest}
-              isLoading={isLoading}
-            />
-            
-            {response && currentMessage && (
-              <ResponseDisplay 
-                response={response}
-                metadata={currentMessage.metadata}
-                onAddToComparison={() => addToComparison(currentMessage)}
-                canAddToComparison={comparisonMessages.length < 2}
-                isInComparison={comparisonMessages.some(m => m.id === currentMessage.id)}
+          ) : (
+            <div className="space-y-8 mt-8">
+              <ModelSelection 
+                selectedModel={selectedModel}
+                onModelSelect={setSelectedModel}
               />
-            )}
+              
+              <PromptConfiguration
+                systemPrompt={systemPrompt}
+                userPrompt={userPrompt}
+                onSystemPromptChange={setSystemPrompt}
+                onUserPromptChange={setUserPrompt}
+              />
+              
+              <ParameterControls
+                temperature={temperature}
+                maxTokens={maxTokens}
+                presencePenalty={presencePenalty}
+                frequencyPenalty={frequencyPenalty}
+                onTemperatureChange={setTemperature}
+                onMaxTokensChange={setMaxTokens}
+                onPresencePenaltyChange={setPresencePenalty}
+                onFrequencyPenaltyChange={setFrequencyPenalty}
+              />
+              
+              <ActionButtons
+                onGenerate={handleGenerate}
+                onBatchTest={handleBatchTest}
+                isLoading={isLoading}
+              />
+              
+              {response && currentMessage && (
+                <ResponseDisplay 
+                  response={response}
+                  metadata={currentMessage.metadata}
+                  onAddToComparison={() => addToComparison(currentMessage)}
+                  canAddToComparison={comparisonMessages.length < 2}
+                  isInComparison={comparisonMessages.some(m => m.id === currentMessage.id)}
+                />
+              )}
 
-            {comparisonMessages.length > 0 && (
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setShowComparison(true)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-150 hover:scale-105"
-                >
-                  Compare {comparisonMessages.length} Response{comparisonMessages.length > 1 ? 's' : ''}
-                </button>
-              </div>
-            )}
-            
-            {batchResults.length > 0 && (
-              <BatchResults results={batchResults} />
-            )}
-          </div>
-        )}
+              {comparisonMessages.length > 0 && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowComparison(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-150 hover:scale-105"
+                  >
+                    Compare {comparisonMessages.length} Response{comparisonMessages.length > 1 ? 's' : ''}
+                  </button>
+                </div>
+              )}
+              
+              {batchResults.length > 0 && (
+                <BatchResults results={batchResults} />
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

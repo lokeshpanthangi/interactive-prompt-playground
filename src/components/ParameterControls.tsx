@@ -34,7 +34,7 @@ export const ParameterControls = ({
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 cursor-help" />
               <div className="invisible group-hover:visible absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-10">
-                Controls randomness: 0 is focused, 1 is creative
+                Controls randomness: 0 is focused, 2 is creative
               </div>
             </div>
             <span className="text-sm font-medium text-orange-600">{temperature}</span>
@@ -68,8 +68,8 @@ export const ParameterControls = ({
           <input
             type="range"
             min="50"
-            max="4000"
-            step="50"
+            max="500"
+            step="10"
             value={maxTokens}
             onChange={(e) => onMaxTokensChange(parseInt(e.target.value))}
             className="w-full smooth-slider bg-gradient-to-r from-green-200 to-purple-200"
