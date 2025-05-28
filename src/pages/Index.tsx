@@ -45,6 +45,7 @@ const Index = () => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [comparisonMessages, setComparisonMessages] = useState<ChatMessage[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const generateChatTitle = (userPrompt: string) => {
     return userPrompt.slice(0, 30) + (userPrompt.length > 30 ? '...' : '') || 'New Chat';
@@ -117,6 +118,8 @@ const Index = () => {
   };
 
   const handleBatchTest = async () => {
+    if (!userPrompt.trim()) return;
+    
     setIsLoading(true);
     const temperatures = [0.3, 0.7, 1.0];
     const results = [];
@@ -138,6 +141,8 @@ const Index = () => {
             ],
             temperature: temp,
             max_tokens: maxTokens,
+            presence_penalty: presencePenalty,
+            frequency_penalty: frequencyPenalty,
           }),
         });
 
@@ -210,6 +215,8 @@ const Index = () => {
         currentChatId={currentChatId}
         onLoadChat={loadChat}
         onNewChat={startNewChat}
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       
       <div className="flex-1 max-w-4xl mx-auto px-4 py-8">

@@ -34,7 +34,7 @@ export const PromptConfiguration = ({
             value={systemPrompt}
             onChange={(e) => onSystemPromptChange(e.target.value)}
             placeholder="You are a helpful assistant that creates engaging product descriptions..."
-            className="w-full h-24 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-150 focus:shadow-lg"
+            className="w-full h-24 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-150 focus:shadow-lg"
           />
         </div>
 
@@ -44,7 +44,7 @@ export const PromptConfiguration = ({
             value={userPrompt}
             onChange={(e) => onUserPromptChange(e.target.value)}
             placeholder="Create a product description for: iPhone"
-            className="w-full h-16 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-150 focus:shadow-lg"
+            className="w-full h-16 px-4 py-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-150 focus:shadow-lg"
           />
         </div>
       </div>

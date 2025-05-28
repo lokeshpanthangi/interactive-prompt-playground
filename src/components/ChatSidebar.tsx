@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Plus, MessageSquare } from 'lucide-react';
+import { Plus, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ChatMessage } from '@/pages/Index';
 
 interface ChatSidebarProps {
@@ -8,9 +8,18 @@ interface ChatSidebarProps {
   currentChatId: string | null;
   onLoadChat: (chatId: string) => void;
   onNewChat: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export const ChatSidebar = ({ chatHistory, currentChatId, onLoadChat, onNewChat }: ChatSidebarProps) => {
+export const ChatSidebar = ({ 
+  chatHistory, 
+  currentChatId, 
+  onLoadChat, 
+  onNewChat,
+  isCollapsed,
+  onToggleCollapse
+}: ChatSidebarProps) => {
   const formatDate = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -22,9 +31,40 @@ export const ChatSidebar = ({ chatHistory, currentChatId, onLoadChat, onNewChat 
     return date.toLocaleDateString();
   };
 
+  if (isCollapsed) {
+    return (
+      <div className="w-12 bg-gray-50 border-r border-gray-200 flex flex-col h-screen">
+        <div className="p-2 border-b border-gray-200">
+          <button
+            onClick={onToggleCollapse}
+            className="w-8 h-8 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="p-2">
+          <button
+            onClick={onNewChat}
+            className="w-8 h-8 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-screen">
       <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={onToggleCollapse}
+            className="w-8 h-8 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </div>
         <button
           onClick={onNewChat}
           className="w-full flex items-center space-x-3 bg-white hover:bg-gray-100 text-gray-700 px-4 py-3 rounded-xl border border-gray-200 transition-all duration-150 hover:scale-[1.02] hover:shadow-sm"
