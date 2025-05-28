@@ -70,7 +70,7 @@ const Index = () => {
             ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
             { role: 'user', content: userPrompt }
           ],
-          temperature,
+          temperature: temperature,
           max_tokens: maxTokens,
           presence_penalty: presencePenalty,
           frequency_penalty: frequencyPenalty,
@@ -206,6 +206,15 @@ const Index = () => {
     setComparisonMessages(prev => prev.filter(m => m.id !== messageId));
   };
 
+  const toggleComparison = (message: ChatMessage) => {
+    const isInComparison = comparisonMessages.some(m => m.id === message.id);
+    if (isInComparison) {
+      removeFromComparison(message.id);
+    } else if (comparisonMessages.length < 2) {
+      addToComparison(message);
+    }
+  };
+
   const currentMessage = currentChatId ? chatHistory.find(c => c.id === currentChatId) : null;
 
   return (
@@ -266,7 +275,7 @@ const Index = () => {
                 <ResponseDisplay 
                   response={response}
                   metadata={currentMessage.metadata}
-                  onAddToComparison={() => addToComparison(currentMessage)}
+                  onToggleComparison={() => toggleComparison(currentMessage)}
                   canAddToComparison={comparisonMessages.length < 2}
                   isInComparison={comparisonMessages.some(m => m.id === currentMessage.id)}
                 />

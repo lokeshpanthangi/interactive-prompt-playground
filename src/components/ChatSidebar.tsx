@@ -35,7 +35,7 @@ export const ChatSidebar = ({
     <div className={`fixed top-0 left-0 h-screen bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out z-10 ${
       isCollapsed ? 'w-12' : 'w-80'
     }`}>
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
+      <div className="p-3 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={onToggleCollapse}
@@ -56,14 +56,14 @@ export const ChatSidebar = ({
         {isCollapsed && (
           <button
             onClick={onNewChat}
-            className="w-8 h-8 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150 mt-2"
+            className="w-8 h-8 flex items-center justify-center bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-200 transition-all duration-150 mt-2 mx-auto"
           >
             <Plus className="w-4 h-4" />
           </button>
         )}
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {!isCollapsed && (
           <>
             {chatHistory.length === 0 ? (

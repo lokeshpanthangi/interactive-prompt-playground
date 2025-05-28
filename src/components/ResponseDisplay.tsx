@@ -10,7 +10,7 @@ interface ResponseDisplayProps {
     tokens: number;
     responseTime: string;
   };
-  onAddToComparison?: () => void;
+  onToggleComparison?: () => void;
   canAddToComparison?: boolean;
   isInComparison?: boolean;
 }
@@ -18,7 +18,7 @@ interface ResponseDisplayProps {
 export const ResponseDisplay = ({ 
   response, 
   metadata, 
-  onAddToComparison,
+  onToggleComparison,
   canAddToComparison = true,
   isInComparison = false
 }: ResponseDisplayProps) => {
@@ -35,14 +35,14 @@ export const ResponseDisplay = ({
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-lg font-medium text-gray-900">AI Response</h3>
         <div className="flex space-x-2">
-          {onAddToComparison && (
+          {onToggleComparison && (
             <button
-              onClick={onAddToComparison}
+              onClick={onToggleComparison}
               disabled={!canAddToComparison && !isInComparison}
               className={`opacity-0 group-hover:opacity-100 transition-all duration-150 p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:hover:bg-transparent ${
-                isInComparison ? 'bg-blue-100 text-blue-600' : ''
+                isInComparison ? 'bg-blue-100 text-blue-600 opacity-100' : ''
               }`}
-              title={isInComparison ? "Added to comparison" : canAddToComparison ? "Add to comparison" : "Comparison limit reached"}
+              title={isInComparison ? "Remove from comparison" : canAddToComparison ? "Add to comparison" : "Comparison limit reached"}
             >
               <GitCompare className="w-4 h-4" />
             </button>

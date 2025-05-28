@@ -46,7 +46,7 @@ export const ParameterControls = ({
             step="0.1"
             value={temperature}
             onChange={(e) => onTemperatureChange(parseFloat(e.target.value))}
-            className="w-full smooth-slider bg-gradient-to-r from-blue-200 to-orange-200"
+            className="w-full smooth-slider bg-gradient-to-r from-gray-200 to-gray-300"
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>Conservative</span>
@@ -72,7 +72,7 @@ export const ParameterControls = ({
             step="10"
             value={maxTokens}
             onChange={(e) => onMaxTokensChange(parseInt(e.target.value))}
-            className="w-full smooth-slider bg-gradient-to-r from-green-200 to-purple-200"
+            className="w-full smooth-slider bg-gradient-to-r from-gray-200 to-gray-300"
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>Short</span>
@@ -98,7 +98,7 @@ export const ParameterControls = ({
             step="0.1"
             value={presencePenalty}
             onChange={(e) => onPresencePenaltyChange(parseFloat(e.target.value))}
-            className="w-full smooth-slider bg-gradient-to-r from-red-200 to-blue-200"
+            className="w-full smooth-slider bg-gradient-to-r from-gray-200 to-gray-300"
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>Repetitive</span>
@@ -124,7 +124,7 @@ export const ParameterControls = ({
             step="0.1"
             value={frequencyPenalty}
             onChange={(e) => onFrequencyPenaltyChange(parseFloat(e.target.value))}
-            className="w-full smooth-slider bg-gradient-to-r from-yellow-200 to-indigo-200"
+            className="w-full smooth-slider bg-gradient-to-r from-gray-200 to-gray-300"
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>Repetitive</span>
