@@ -68,7 +68,10 @@ export const ParameterControls = ({
           step={step}
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer smooth-slider"
+          style={{
+            background: `linear-gradient(to right, #f97316 0%, #f97316 ${((value - min) / (max - min)) * 100}%, #e5e7eb ${((value - min) / (max - min)) * 100}%, #e5e7eb 100%)`
+          }}
         />
         {leftLabel && rightLabel && (
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -91,7 +94,7 @@ export const ParameterControls = ({
           onChange={onTemperatureChange}
           min={0}
           max={2}
-          step={0.1}
+          step={0.01}
           tooltip="Controls creativity vs consistency. Lower values are more focused and deterministic."
           leftLabel="Conservative"
           rightLabel="Creative"
@@ -103,7 +106,7 @@ export const ParameterControls = ({
           onChange={onMaxTokensChange}
           min={50}
           max={500}
-          step={10}
+          step={1}
           tooltip="Maximum number of tokens in the response. ~4 characters per token."
         />
         
@@ -113,7 +116,7 @@ export const ParameterControls = ({
           onChange={onPresencePenaltyChange}
           min={-2}
           max={2}
-          step={0.1}
+          step={0.01}
           tooltip="Reduces likelihood of repeating topics. Positive values encourage new topics."
         />
         
@@ -123,7 +126,7 @@ export const ParameterControls = ({
           onChange={onFrequencyPenaltyChange}
           min={-2}
           max={2}
-          step={0.1}
+          step={0.01}
           tooltip="Reduces likelihood of repeating words. Positive values encourage varied vocabulary."
         />
       </div>
