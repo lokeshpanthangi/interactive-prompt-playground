@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { ModelSelection } from '@/components/ModelSelection';
@@ -9,6 +8,7 @@ import { ResponseDisplay } from '@/components/ResponseDisplay';
 import { BatchResults } from '@/components/BatchResults';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import { ComparisonView } from '@/components/ComparisonView';
+import { makeOpenAIRequest } from '@/config/openai';
 
 export interface ChatMessage {
   id: string;
@@ -45,7 +45,7 @@ const Index = () => {
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [comparisonMessages, setComparisonMessages] = useState<ChatMessage[]>([]);
   const [showComparison, setShowComparison] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const generateChatTitle = (userPrompt: string) => {
     return userPrompt.slice(0, 30) + (userPrompt.length > 30 ? '...' : '') || 'New Chat';
@@ -58,30 +58,19 @@ const Index = () => {
     const startTime = Date.now();
     
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer sk-dDIVf60GGq8-LkN1xCf9tQ2RvxEvpSX5ZssKQZHC4bT3BlbkFJp-ZSHG76KLukUAbcGIZzm0rP5G77d43kDysufTBF8A',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          messages: [
-            ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: temperature,
-          max_tokens: maxTokens,
-          presence_penalty: presencePenalty,
-          frequency_penalty: frequencyPenalty,
-        }),
-      });
+      const requestBody = {
+        model: selectedModel,
+        messages: [
+          ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: temperature,
+        max_tokens: maxTokens,
+        presence_penalty: presencePenalty,
+        frequency_penalty: frequencyPenalty,
+      };
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await makeOpenAIRequest(requestBody);
       const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
       const generatedResponse = data.choices[0].message.content;
       const tokensUsed = data.usage?.total_tokens || 0;
@@ -127,36 +116,27 @@ const Index = () => {
     for (const temp of temperatures) {
       try {
         const startTime = Date.now();
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer sk-dDIVf60GGq8-LkN1xCf9tQ2RvxEvpSX5ZssKQZHC4bT3BlbkFJp-ZSHG76KLukUAbcGIZzm0rP5G77d43kDysufTBF8A',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: selectedModel,
-            messages: [
-              ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-              { role: 'user', content: userPrompt }
-            ],
-            temperature: temp,
-            max_tokens: maxTokens,
-            presence_penalty: presencePenalty,
-            frequency_penalty: frequencyPenalty,
-          }),
-        });
+        const requestBody = {
+          model: selectedModel,
+          messages: [
+            ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: temp,
+          max_tokens: maxTokens,
+          presence_penalty: presencePenalty,
+          frequency_penalty: frequencyPenalty,
+        };
 
-        if (response.ok) {
-          const data = await response.json();
-          const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
-          
-          results.push({
-            id: results.length + 1,
-            params: { temperature: temp, maxTokens },
-            response: data.choices[0].message.content,
-            metadata: { tokens: data.usage?.total_tokens || 0, time: responseTime }
-          });
-        }
+        const data = await makeOpenAIRequest(requestBody);
+        const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+        
+        results.push({
+          id: results.length + 1,
+          params: { temperature: temp, maxTokens },
+          response: data.choices[0].message.content,
+          metadata: { tokens: data.usage?.total_tokens || 0, time: responseTime }
+        });
       } catch (error) {
         console.error(`Error in batch test for temperature ${temp}:`, error);
       }
