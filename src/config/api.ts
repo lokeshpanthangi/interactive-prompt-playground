@@ -9,10 +9,11 @@ export const getOpenAIApiKey = (): string => {
   return apiKey;
 };
 
+export const getOpenAIHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${getOpenAIApiKey()}`
+});
+
 export const openAIConfig = {
-  baseURL: 'https://api.openai.com/v1',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${getOpenAIApiKey()}`
-  }
+  baseURL: 'https://api.openai.com/v1'
 };

@@ -3,7 +3,7 @@ import { ResponseDisplay } from '@/components/ResponseDisplay';
 import { ChatSidebar } from '@/components/ChatSidebar';
 import { ModelSelection } from '@/components/ModelSelection';
 import { ParameterControls } from '@/components/ParameterControls';
-import { openAIConfig } from '@/config/api';
+import { getOpenAIHeaders } from '@/config/api';
 
 export interface ChatMessage {
   id: string;
@@ -134,7 +134,6 @@ const Index = () => {
         ],
         temperature: temperature,
         max_tokens: maxTokens,
-        top_p: topP,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty
       };
@@ -143,7 +142,7 @@ const Index = () => {
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: openAIConfig.headers,
+        headers: getOpenAIHeaders(),
         body: JSON.stringify(requestBody)
       });
 
