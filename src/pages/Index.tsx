@@ -225,12 +225,10 @@ const Index = () => {
           <ParameterControls
             temperature={temperature}
             maxTokens={maxTokens}
-            topP={topP}
             frequencyPenalty={frequencyPenalty}
             presencePenalty={presencePenalty}
             onTemperatureChange={handleTemperatureChange}
             onMaxTokensChange={handleMaxTokensChange}
-            onTopPChange={handleTopPChange}
             onFrequencyPenaltyChange={handleFrequencyPenaltyChange}
             onPresencePenaltyChange={handlePresencePenaltyChange}
           />
