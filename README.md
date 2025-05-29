@@ -1,73 +1,104 @@
-# Welcome to your Lovable project
+# 🤖 Interactive Prompt Playground
 
-## Project info
+Welcome to the **Interactive Prompt Playground**!  
+Test and refine AI model parameters in a conversational interface.  
+Experiment with different settings to understand how they affect AI responses.
 
-**URL**: https://lovable.dev/projects/c5f1ee5b-51fa-4a34-87f1-1c7cdac4d789
+---
 
-## How can I edit this code?
+## 🚀 Getting Started
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/c5f1ee5b-51fa-4a34-87f1-1c7cdac4d789) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### 1. Clone the Repository
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+git clone 
+cd interactive-prompt-playground
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 2. Install Dependencies
 
-# Step 3: Install the necessary dependencies.
-npm i
+```sh
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 3. Set Up Environment Variables
+
+- Copy `.env.example` to `.env` and add your OpenAI API key or other required secrets.
+
+### 4. Run the Playground
+
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+- Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## ✨ Features
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 🧠 Model Selection
 
-## What technologies are used for this project?
+- Choose between different AI models (e.g., `gpt-3.5-turbo`).
+- Visually highlighted selection for clarity.
 
-This project is built with:
+### 🎛️ Parameter Controls
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Temperature**: Adjust randomness of responses.
+- **Max Tokens**: Set the maximum length of the AI's reply.
+- **Presence Penalty**: Discourage repetition of new topics.
+- **Frequency Penalty**: Discourage repeating the same lines.
 
-## How can I deploy this project?
+### 💬 Prompt Configuration
 
-Simply open [Lovable](https://lovable.dev/projects/c5f1ee5b-51fa-4a34-87f1-1c7cdac4d789) and click on Share -> Publish.
+- **System Prompt**: Set the system's behavior or context.
+- **User Prompt**: Enter your message to the AI.
 
-## Can I connect a custom domain to my Lovable project?
+### ⚡ Action Buttons
 
-Yes, you can!
+- **Generate**: Get a response from the AI.
+- **Batch Test**: Run the same prompt with different parameters for comparison.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### 📊 Response Display
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- View AI responses with metadata (model, temperature, tokens used, response time).
+- Add responses to a comparison view.
+
+### 🗂️ Chat History & Sidebar
+
+- Browse previous chats.
+- Load, start new chats, or collapse the sidebar for focus.
+
+### 🆚 Comparison View
+
+- Compare up to two responses side-by-side
+
+## 🛠️ Project Structure
+
+- `src/components/` – UI components (ModelSelection, Header, ParameterControls, etc.)
+- `src/pages/Index.tsx` – Main playground logic and state management
+- `src/config/` – API configuration
+- `public/` – Static assets
+
+---
+
+## 📝 How It Works
+
+1. **Select a Model**: Pick your preferred AI model.
+2. **Configure Prompts**: Set system and user prompts.
+3. **Tune Parameters**: Adjust temperature, max tokens, and penalties.
+4. **Generate**: Click "Generate" to see the AI's response.
+5. **Compare**: Add responses to the comparison view for side-by-side analysis.
+6. **Review History**: Access previous chats from the sidebar.
+
+---
+
+## 📦 Built With
+
+- [React](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Vite](https://vitejs.dev/)
+
+---
+Enjoy experimenting! 🚀
