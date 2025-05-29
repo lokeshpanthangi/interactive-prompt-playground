@@ -1,14 +1,8 @@
 
 const getOpenAIApiKey = (): string => {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  console.log('API Key length:', apiKey ? apiKey.length : 'undefined');
-  console.log('API Key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined');
-  
   if (!apiKey) {
     throw new Error('OpenAI API key not found. Please add VITE_OPENAI_API_KEY to your .env file');
-  }
-  if (!apiKey.startsWith('sk-')) {
-    throw new Error('Invalid OpenAI API key format. API key should start with "sk-"');
   }
   return apiKey;
 };
