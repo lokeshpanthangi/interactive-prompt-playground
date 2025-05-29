@@ -9,7 +9,6 @@ interface ResponseDisplayProps {
     temperature: number;
     tokens: number;
     responseTime: string;
-    maxTokens?: number;
   };
   onToggleComparison?: () => void;
   canAddToComparison?: boolean;
@@ -68,10 +67,7 @@ export const ResponseDisplay = ({
       <div className="flex flex-wrap gap-4 text-sm text-gray-500 border-t border-gray-100 pt-4">
         <span>Model: <span className="font-medium">{metadata.model}</span></span>
         <span>Temperature: <span className="font-medium">{metadata.temperature}</span></span>
-        <span>Tokens Used: <span className="font-medium">{metadata.tokens}</span></span>
-        {metadata.maxTokens && (
-          <span>Max Tokens: <span className="font-medium">{metadata.maxTokens}</span></span>
-        )}
+        <span>Tokens: <span className="font-medium">{metadata.tokens}</span></span>
         <span>Time: <span className="font-medium">{metadata.responseTime}</span></span>
       </div>
     </div>

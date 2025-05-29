@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { ModelSelection } from '@/components/ModelSelection';
@@ -28,7 +27,6 @@ export interface ChatMessage {
     temperature: number;
     tokens: number;
     responseTime: string;
-    maxTokens?: number;
   };
 }
 
