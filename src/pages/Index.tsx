@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ResponseDisplay } from '@/components/ResponseDisplay';
 import { ChatSidebar } from '@/components/ChatSidebar';
-import { ModelSelection } from '@/components/ModelSelection';
-import { ParameterControls } from '@/components/ParameterControls';
-import { getOpenAIHeaders } from '@/config/api';
+import { ModelSettings } from '@/components/ModelSettings';
+import { openAIConfig } from '@/config/api';
 
 export interface ChatMessage {
   id: string;
@@ -42,7 +41,7 @@ const Index = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [comparisonList, setComparisonList] = useState<string[]>([]);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Changed to false to open by default
 
   useEffect(() => {
     // Load chat history from local storage on component mount
@@ -133,7 +132,8 @@ const Index = () => {
           { role: "user", content: userPrompt }
         ],
         temperature: temperature,
-        max_tokens: maxTokens,
+        max_tokens: maxTokens, // This ensures the response respects token limit
+        top_p: topP,
         frequency_penalty: frequencyPenalty,
         presence_penalty: presencePenalty
       };
@@ -142,7 +142,7 @@ const Index = () => {
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: getOpenAIHeaders(),
+        headers: openAIConfig.headers,
         body: JSON.stringify(requestBody)
       });
 
@@ -158,7 +158,7 @@ const Index = () => {
       const responseTime = `${(endTime - startTime) / 1000}s`;
       
       const aiResponse = data.choices[0]?.message?.content || 'No response received';
-      const tokensUsed = data.usage?.completion_tokens || 0;
+      const tokensUsed = data.usage?.completion_tokens || 0; // Use completion_tokens for accurate count
 
       const metadata = {
         model: selectedModel,
@@ -204,6 +204,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
+      
       <ChatSidebar 
         chatHistory={chatHistory} 
         currentChatId={currentChatId}
@@ -213,25 +214,26 @@ const Index = () => {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
+      
       <div className="flex-1 p-4">
         <div className="max-w-4xl mx-auto space-y-6">
           
-          <ModelSelection
+          <ModelSettings
             selectedModel={selectedModel}
-            onModelSelect={handleModelSelect}
-          />
-
-          <ParameterControls
             temperature={temperature}
             maxTokens={maxTokens}
+            topP={topP}
             frequencyPenalty={frequencyPenalty}
             presencePenalty={presencePenalty}
+            onModelSelect={handleModelSelect}
             onTemperatureChange={handleTemperatureChange}
             onMaxTokensChange={handleMaxTokensChange}
+            onTopPChange={handleTopPChange}
             onFrequencyPenaltyChange={handleFrequencyPenaltyChange}
             onPresencePenaltyChange={handlePresencePenaltyChange}
           />
 
+          
           <div className="bg-white rounded-2xl shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">System Prompt</h2>
             <textarea
@@ -243,6 +245,7 @@ const Index = () => {
             />
           </div>
 
+          
           <div className="bg-white rounded-2xl shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">User Prompt</h2>
             <textarea
@@ -261,6 +264,7 @@ const Index = () => {
             </button>
           </div>
 
+          
           {currentResponse && currentMetadata && (
             <ResponseDisplay
               response={currentResponse}
