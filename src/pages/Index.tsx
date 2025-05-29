@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
+import { Header } from '@/components/Header';
+import { ModelSelection } from '@/components/ModelSelection';
+import { PromptConfiguration } from '@/components/PromptConfiguration';
+import { ParameterControls } from '@/components/ParameterControls';
+import { ActionButtons } from '@/components/ActionButtons';
 import { ResponseDisplay } from '@/components/ResponseDisplay';
+import { BatchResults } from '@/components/BatchResults';
 import { ChatSidebar } from '@/components/ChatSidebar';
-import { ModelSettings } from '@/components/ModelSettings';
-import { openAIConfig } from '@/config/api';
+import { ComparisonView } from '@/components/ComparisonView';
 
 export interface ChatMessage {
   id: string;
   title: string;
   timestamp: Date;
   model: string;
-  temperature: number;
-  userPrompt: string;
   systemPrompt: string;
+  userPrompt: string;
+  temperature: number;
+  maxTokens: number;
+  presencePenalty: number;
+  frequencyPenalty: number;
   response: string;
   metadata: {
     model: string;
@@ -22,282 +31,270 @@ export interface ChatMessage {
 }
 
 const Index = () => {
-  const [userPrompt, setUserPrompt] = useState('');
-  const [systemPrompt, setSystemPrompt] = useState('You are a helpful assistant.');
-  const [currentResponse, setCurrentResponse] = useState('');
-  const [currentMetadata, setCurrentMetadata] = useState<{
-    model: string;
-    temperature: number;
-    tokens: number;
-    responseTime: string;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo');
-  const [temperature, setTemperature] = useState(0.5);
-  const [maxTokens, setMaxTokens] = useState(2048);
-  const [topP, setTopP] = useState(1);
-  const [frequencyPenalty, setFrequencyPenalty] = useState(0);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [userPrompt, setUserPrompt] = useState('');
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(150);
   const [presencePenalty, setPresencePenalty] = useState(0);
+  const [frequencyPenalty, setFrequencyPenalty] = useState(0);
+  const [response, setResponse] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [batchResults, setBatchResults] = useState([]);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [comparisonList, setComparisonList] = useState<string[]>([]);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Changed to false to open by default
+  const [comparisonMessages, setComparisonMessages] = useState<ChatMessage[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
-  useEffect(() => {
-    // Load chat history from local storage on component mount
-    const storedChatHistory = localStorage.getItem('chatHistory');
-    if (storedChatHistory) {
-      setChatHistory(JSON.parse(storedChatHistory));
-    }
-  }, []);
-
-  useEffect(() => {
-    // Save chat history to local storage whenever it changes
-    localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-  }, [chatHistory]);
-
-  const handleUserPromptChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setUserPrompt(event.target.value);
+  const generateChatTitle = (userPrompt: string) => {
+    return userPrompt.slice(0, 30) + (userPrompt.length > 30 ? '...' : '') || 'New Chat';
   };
 
-  const handleSystemPromptChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setSystemPrompt(event.target.value);
-  };
-
-  const handleModelSelect = (model: string) => {
-    setSelectedModel(model);
-  };
-
-  const handleTemperatureChange = (value: number) => {
-    setTemperature(value);
-  };
-
-  const handleMaxTokensChange = (value: number) => {
-    setMaxTokens(value);
-  };
-
-  const handleTopPChange = (value: number) => {
-    setTopP(value);
-  };
-
-  const handleFrequencyPenaltyChange = (value: number) => {
-    setFrequencyPenalty(value);
-  };
-
-  const handlePresencePenaltyChange = (value: number) => {
-    setPresencePenalty(value);
-  };
-
-  const handleNewChat = () => {
-    setUserPrompt('');
-    setSystemPrompt('You are a helpful assistant.');
-    setCurrentResponse('');
-    setCurrentMetadata(null);
-    setCurrentChatId(null);
-  };
-
-  const handleLoadChat = (chatId: string) => {
-    const chat = chatHistory.find((chat) => chat.id === chatId);
-    if (chat) {
-      setUserPrompt(chat.userPrompt);
-      setSystemPrompt(chat.systemPrompt);
-      setCurrentResponse(chat.response);
-      setCurrentMetadata(chat.metadata);
-      setCurrentChatId(chatId);
-    }
-  };
-
-  const handleAddToComparison = (chatId: string) => {
-    if (comparisonList.includes(chatId)) {
-      setComparisonList(comparisonList.filter((id) => id !== chatId));
-    } else if (comparisonList.length < 2) {
-      setComparisonList([...comparisonList, chatId]);
-    }
-  };
-
-  const generateResponse = async () => {
+  const handleGenerate = async () => {
     if (!userPrompt.trim()) return;
-
+    
     setIsLoading(true);
-    setCurrentResponse('');
-    setCurrentMetadata(null);
-
+    const startTime = Date.now();
+    
     try {
-      const startTime = Date.now();
-      
-      const requestBody = {
-        model: selectedModel,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: temperature,
-        max_tokens: maxTokens, // This ensures the response respects token limit
-        top_p: topP,
-        frequency_penalty: frequencyPenalty,
-        presence_penalty: presencePenalty
-      };
-
-      console.log('Sending request to OpenAI:', requestBody);
-
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: openAIConfig.headers,
-        body: JSON.stringify(requestBody)
+        headers: {
+          'Authorization': 'Bearer sk-dDIVf60GGq8-LkN1xCf9tQ2RvxEvpSX5ZssKQZHC4bT3BlbkFJp-ZSHG76KLukUAbcGIZzm0rP5G77d43kDysufTBF8A',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: selectedModel,
+          messages: [
+            ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: temperature,
+          max_tokens: maxTokens,
+          presence_penalty: presencePenalty,
+          frequency_penalty: frequencyPenalty,
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`OpenAI API Error: ${errorData.error?.message || 'Unknown error'}`);
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('OpenAI Response:', data);
-      
-      const endTime = Date.now();
-      const responseTime = `${(endTime - startTime) / 1000}s`;
-      
-      const aiResponse = data.choices[0]?.message?.content || 'No response received';
-      const tokensUsed = data.usage?.completion_tokens || 0; // Use completion_tokens for accurate count
+      const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+      const generatedResponse = data.choices[0].message.content;
+      const tokensUsed = data.usage?.total_tokens || 0;
 
-      const metadata = {
-        model: selectedModel,
-        temperature: temperature,
-        tokens: tokensUsed,
-        responseTime: responseTime
-      };
-
-      setCurrentResponse(aiResponse);
-      setCurrentMetadata(metadata);
-
-      // Add to chat history
-      const newChat: ChatMessage = {
+      const newMessage: ChatMessage = {
         id: Date.now().toString(),
-        title: userPrompt.slice(0, 50) + (userPrompt.length > 50 ? '...' : ''),
+        title: generateChatTitle(userPrompt),
         timestamp: new Date(),
         model: selectedModel,
-        temperature: temperature,
-        userPrompt,
         systemPrompt,
-        response: aiResponse,
-        metadata
+        userPrompt,
+        temperature,
+        maxTokens,
+        presencePenalty,
+        frequencyPenalty,
+        response: generatedResponse,
+        metadata: {
+          model: selectedModel,
+          temperature,
+          tokens: tokensUsed,
+          responseTime,
+        },
       };
 
-      setChatHistory(prev => [newChat, ...prev]);
-      setCurrentChatId(newChat.id);
-
+      setResponse(generatedResponse);
+      setChatHistory(prev => [newMessage, ...prev]);
+      setCurrentChatId(newMessage.id);
     } catch (error) {
-      console.error('Error generating response:', error);
-      setCurrentResponse(`Error: ${error instanceof Error ? error.message : 'Failed to generate response'}`);
-      setCurrentMetadata({
-        model: selectedModel,
-        temperature: temperature,
-        tokens: 0,
-        responseTime: '0s'
-      });
+      console.error('Error calling OpenAI API:', error);
+      setResponse('Error: Failed to generate response. Please check your API key and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const canAddToComparison = comparisonList.length < 2;
+  const handleBatchTest = async () => {
+    if (!userPrompt.trim()) return;
+    
+    setIsLoading(true);
+    const temperatures = [0.3, 0.7, 1.0];
+    const results = [];
+
+    for (const temp of temperatures) {
+      try {
+        const startTime = Date.now();
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer sk-dDIVf60GGq8-LkN1xCf9tQ2RvxEvpSX5ZssKQZHC4bT3BlbkFJp-ZSHG76KLukUAbcGIZzm0rP5G77d43kDysufTBF8A',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: selectedModel,
+            messages: [
+              ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: temp,
+            max_tokens: maxTokens,
+            presence_penalty: presencePenalty,
+            frequency_penalty: frequencyPenalty,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+          
+          results.push({
+            id: results.length + 1,
+            params: { temperature: temp, maxTokens },
+            response: data.choices[0].message.content,
+            metadata: { tokens: data.usage?.total_tokens || 0, time: responseTime }
+          });
+        }
+      } catch (error) {
+        console.error(`Error in batch test for temperature ${temp}:`, error);
+      }
+    }
+
+    setBatchResults(results);
+    setIsLoading(false);
+  };
+
+  const loadChat = (chatId: string) => {
+    const chat = chatHistory.find(c => c.id === chatId);
+    if (chat) {
+      setSelectedModel(chat.model);
+      setSystemPrompt(chat.systemPrompt);
+      setUserPrompt(chat.userPrompt);
+      setTemperature(chat.temperature);
+      setMaxTokens(chat.maxTokens);
+      setPresencePenalty(chat.presencePenalty);
+      setFrequencyPenalty(chat.frequencyPenalty);
+      setResponse(chat.response);
+      setCurrentChatId(chatId);
+    }
+  };
+
+  const startNewChat = () => {
+    setSelectedModel('gpt-3.5-turbo');
+    setSystemPrompt('');
+    setUserPrompt('');
+    setTemperature(0.7);
+    setMaxTokens(150);
+    setPresencePenalty(0);
+    setFrequencyPenalty(0);
+    setResponse('');
+    setCurrentChatId(null);
+    setBatchResults([]);
+    setShowComparison(false);
+    setComparisonMessages([]);
+  };
+
+  const addToComparison = (message: ChatMessage) => {
+    if (comparisonMessages.length < 2 && !comparisonMessages.find(m => m.id === message.id)) {
+      setComparisonMessages(prev => [...prev, message]);
+    }
+  };
+
+  const removeFromComparison = (messageId: string) => {
+    setComparisonMessages(prev => prev.filter(m => m.id !== messageId));
+  };
+
+  const toggleComparison = (message: ChatMessage) => {
+    const isInComparison = comparisonMessages.some(m => m.id === message.id);
+    if (isInComparison) {
+      removeFromComparison(message.id);
+    } else if (comparisonMessages.length < 2) {
+      addToComparison(message);
+    }
+  };
+
+  const currentMessage = currentChatId ? chatHistory.find(c => c.id === currentChatId) : null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      
+    <div className="min-h-screen bg-white flex w-full">
       <ChatSidebar 
-        chatHistory={chatHistory} 
+        chatHistory={chatHistory}
         currentChatId={currentChatId}
-        onLoadChat={handleLoadChat}
-        onNewChat={handleNewChat}
+        onLoadChat={loadChat}
+        onNewChat={startNewChat}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-
       
-      <div className="flex-1 p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className={`flex-1 overflow-y-auto transition-all duration-300 ease-in-out ${
+        sidebarCollapsed ? 'ml-12' : 'ml-80'
+      }`}>
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Header />
           
-          <ModelSettings
-            selectedModel={selectedModel}
-            temperature={temperature}
-            maxTokens={maxTokens}
-            topP={topP}
-            frequencyPenalty={frequencyPenalty}
-            presencePenalty={presencePenalty}
-            onModelSelect={handleModelSelect}
-            onTemperatureChange={handleTemperatureChange}
-            onMaxTokensChange={handleMaxTokensChange}
-            onTopPChange={handleTopPChange}
-            onFrequencyPenaltyChange={handleFrequencyPenaltyChange}
-            onPresencePenaltyChange={handlePresencePenaltyChange}
-          />
-
-          
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">System Prompt</h2>
-            <textarea
-              value={systemPrompt}
-              onChange={handleSystemPromptChange}
-              rows={3}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none transition-all duration-200"
-              placeholder="Enter system prompt..."
+          {showComparison && comparisonMessages.length > 0 ? (
+            <ComparisonView 
+              messages={comparisonMessages}
+              onRemoveFromComparison={removeFromComparison}
+              onClose={() => setShowComparison(false)}
             />
-          </div>
+          ) : (
+            <div className="space-y-8 mt-8">
+              <ModelSelection 
+                selectedModel={selectedModel}
+                onModelSelect={setSelectedModel}
+              />
+              
+              <PromptConfiguration
+                systemPrompt={systemPrompt}
+                userPrompt={userPrompt}
+                onSystemPromptChange={setSystemPrompt}
+                onUserPromptChange={setUserPrompt}
+              />
+              
+              <ParameterControls
+                temperature={temperature}
+                maxTokens={maxTokens}
+                presencePenalty={presencePenalty}
+                frequencyPenalty={frequencyPenalty}
+                onTemperatureChange={setTemperature}
+                onMaxTokensChange={setMaxTokens}
+                onPresencePenaltyChange={setPresencePenalty}
+                onFrequencyPenaltyChange={setFrequencyPenalty}
+              />
+              
+              <ActionButtons
+                onGenerate={handleGenerate}
+                onBatchTest={handleBatchTest}
+                isLoading={isLoading}
+              />
+              
+              {response && currentMessage && (
+                <ResponseDisplay 
+                  response={response}
+                  metadata={currentMessage.metadata}
+                  onToggleComparison={() => toggleComparison(currentMessage)}
+                  canAddToComparison={comparisonMessages.length < 2}
+                  isInComparison={comparisonMessages.some(m => m.id === currentMessage.id)}
+                />
+              )}
 
-          
-          <div className="bg-white rounded-2xl shadow p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">User Prompt</h2>
-            <textarea
-              value={userPrompt}
-              onChange={handleUserPromptChange}
-              rows={5}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none transition-all duration-200"
-              placeholder="Enter your prompt..."
-            />
-            <button
-              onClick={generateResponse}
-              disabled={isLoading}
-              className="w-full mt-4 py-3 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-200 transition-all duration-200 disabled:bg-blue-300 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Generating...' : 'Generate Response'}
-            </button>
-          </div>
-
-          
-          {currentResponse && currentMetadata && (
-            <ResponseDisplay
-              response={currentResponse}
-              metadata={currentMetadata}
-              onToggleComparison={
-                currentChatId
-                  ? () => handleAddToComparison(currentChatId)
-                  : undefined
-              }
-              canAddToComparison={canAddToComparison}
-              isInComparison={comparisonList.includes(currentChatId || '')}
-            />
-          )}
-
-          {comparisonList.length > 0 && (
-            <div className="bg-white rounded-2xl shadow p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Comparison</h2>
-              {comparisonList.map((chatId) => {
-                const chat = chatHistory.find((chat) => chat.id === chatId);
-                if (chat) {
-                  return (
-                    <ResponseDisplay
-                      key={chat.id}
-                      response={chat.response}
-                      metadata={chat.metadata}
-                      onToggleComparison={() => handleAddToComparison(chat.id)}
-                      isInComparison={true}
-                      canAddToComparison={false}
-                    />
-                  );
-                }
-                return null;
-              })}
+              {comparisonMessages.length > 0 && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowComparison(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-150 hover:scale-105"
+                  >
+                    Compare {comparisonMessages.length} Response{comparisonMessages.length > 1 ? 's' : ''}
+                  </button>
+                </div>
+              )}
+              
+              {batchResults.length > 0 && (
+                <BatchResults results={batchResults} />
+              )}
             </div>
           )}
         </div>
