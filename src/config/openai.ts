@@ -22,11 +22,12 @@ export const makeOpenAIRequest = async (requestBody: OpenAIRequestParams) => {
   const apiKey = getOpenAIApiKey();
   
   // Ensure all parameters are properly formatted and within valid ranges
+  // For max_tokens, we're strictly enforcing the user-specified value without clamping to a higher value
   const formattedRequestBody = {
     model: requestBody.model,
     messages: requestBody.messages,
     temperature: Math.max(0, Math.min(2, requestBody.temperature)), // Clamp between 0-2
-    max_tokens: Math.max(1, Math.min(4096, requestBody.max_tokens)), // Clamp between 1-4096
+    max_tokens: requestBody.max_tokens, // Use exactly what the user specified
     presence_penalty: Math.max(-2, Math.min(2, requestBody.presence_penalty)), // Clamp between -2 to 2
     frequency_penalty: Math.max(-2, Math.min(2, requestBody.frequency_penalty)), // Clamp between -2 to 2
     top_p: requestBody.top_p !== undefined ? Math.max(0, Math.min(1, requestBody.top_p)) : 1, // Default to 1 if not provided
@@ -61,8 +62,15 @@ export const makeOpenAIRequest = async (requestBody: OpenAIRequestParams) => {
   console.log('OpenAI response received:', {
     model: data.model,
     usage: data.usage,
-    finish_reason: data.choices?.[0]?.finish_reason
+    finish_reason: data.choices?.[0]?.finish_reason,
+    requested_max_tokens: formattedRequestBody.max_tokens,
+    actual_tokens: data.usage?.completion_tokens || 0
   });
+
+  // Verify if the token count matches the requested max_tokens
+  if (data.usage?.completion_tokens > formattedRequestBody.max_tokens) {
+    console.warn(`Token count mismatch: Requested ${formattedRequestBody.max_tokens} but got ${data.usage.completion_tokens}`);
+  }
 
   return data;
 };

@@ -86,11 +86,15 @@ const Index = () => {
       const promptTokens = data.usage?.prompt_tokens || 0;
       const completionTokens = data.usage?.completion_tokens || 0;
 
+      // Check if completion tokens match the requested max_tokens
+      const tokenMatchStatus = completionTokens <= maxTokens ? 'within limit' : 'exceeded limit';
+
       console.log('Token usage:', {
         total: tokensUsed,
         prompt: promptTokens,
         completion: completionTokens,
-        requested_max: maxTokens
+        requested_max: maxTokens,
+        status: tokenMatchStatus
       });
 
       const newMessage: ChatMessage = {
@@ -108,7 +112,7 @@ const Index = () => {
         metadata: {
           model: selectedModel,
           temperature,
-          tokens: tokensUsed,
+          tokens: completionTokens, // Use completion tokens instead of total tokens
           responseTime,
         },
       };
@@ -285,6 +289,7 @@ const Index = () => {
                   onToggleComparison={() => toggleComparison(currentMessage)}
                   canAddToComparison={comparisonMessages.length < 2}
                   isInComparison={comparisonMessages.some(m => m.id === currentMessage.id)}
+                  maxTokens={currentMessage.maxTokens}
                 />
               )}
 
