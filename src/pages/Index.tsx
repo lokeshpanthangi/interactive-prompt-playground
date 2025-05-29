@@ -68,12 +68,30 @@ const Index = () => {
         max_tokens: maxTokens,
         presence_penalty: presencePenalty,
         frequency_penalty: frequencyPenalty,
+        top_p: 1 // Set default top_p value
       };
+
+      console.log('Generating with parameters:', {
+        model: selectedModel,
+        temperature,
+        max_tokens: maxTokens,
+        presence_penalty: presencePenalty,
+        frequency_penalty: frequencyPenalty
+      });
 
       const data = await makeOpenAIRequest(requestBody);
       const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
       const generatedResponse = data.choices[0].message.content;
       const tokensUsed = data.usage?.total_tokens || 0;
+      const promptTokens = data.usage?.prompt_tokens || 0;
+      const completionTokens = data.usage?.completion_tokens || 0;
+
+      console.log('Token usage:', {
+        total: tokensUsed,
+        prompt: promptTokens,
+        completion: completionTokens,
+        requested_max: maxTokens
+      });
 
       const newMessage: ChatMessage = {
         id: Date.now().toString(),
@@ -126,7 +144,16 @@ const Index = () => {
           max_tokens: maxTokens,
           presence_penalty: presencePenalty,
           frequency_penalty: frequencyPenalty,
+          top_p: 1
         };
+
+        console.log(`Batch test ${temp} with parameters:`, {
+          model: selectedModel,
+          temperature: temp,
+          max_tokens: maxTokens,
+          presence_penalty: presencePenalty,
+          frequency_penalty: frequencyPenalty
+        });
 
         const data = await makeOpenAIRequest(requestBody);
         const responseTime = ((Date.now() - startTime) / 1000).toFixed(1) + 's';

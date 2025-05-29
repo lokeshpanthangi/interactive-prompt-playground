@@ -7,8 +7,40 @@ const getOpenAIApiKey = (): string => {
   return apiKey;
 };
 
-export const makeOpenAIRequest = async (requestBody: any) => {
+export interface OpenAIRequestParams {
+  model: string;
+  messages: Array<{ role: string; content: string }>;
+  temperature: number;
+  max_tokens: number;
+  presence_penalty: number;
+  frequency_penalty: number;
+  top_p?: number;
+  stream?: boolean;
+}
+
+export const makeOpenAIRequest = async (requestBody: OpenAIRequestParams) => {
   const apiKey = getOpenAIApiKey();
+  
+  // Ensure all parameters are properly formatted and within valid ranges
+  const formattedRequestBody = {
+    model: requestBody.model,
+    messages: requestBody.messages,
+    temperature: Math.max(0, Math.min(2, requestBody.temperature)), // Clamp between 0-2
+    max_tokens: Math.max(1, Math.min(4096, requestBody.max_tokens)), // Clamp between 1-4096
+    presence_penalty: Math.max(-2, Math.min(2, requestBody.presence_penalty)), // Clamp between -2 to 2
+    frequency_penalty: Math.max(-2, Math.min(2, requestBody.frequency_penalty)), // Clamp between -2 to 2
+    top_p: requestBody.top_p !== undefined ? Math.max(0, Math.min(1, requestBody.top_p)) : 1, // Default to 1 if not provided
+    stream: false // Ensure streaming is disabled for consistent responses
+  };
+
+  console.log('Sending OpenAI request with parameters:', {
+    model: formattedRequestBody.model,
+    temperature: formattedRequestBody.temperature,
+    max_tokens: formattedRequestBody.max_tokens,
+    presence_penalty: formattedRequestBody.presence_penalty,
+    frequency_penalty: formattedRequestBody.frequency_penalty,
+    top_p: formattedRequestBody.top_p
+  });
   
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -16,12 +48,21 @@ export const makeOpenAIRequest = async (requestBody: any) => {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(formattedRequestBody),
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  console.log('OpenAI response received:', {
+    model: data.model,
+    usage: data.usage,
+    finish_reason: data.choices?.[0]?.finish_reason
+  });
+
+  return data;
 };
